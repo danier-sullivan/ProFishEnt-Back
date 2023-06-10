@@ -1,43 +1,33 @@
-const express = require('express')
+///////////////////////////////
+// DEPENDENCIES
+////////////////////////////////
+// get .env variables
+require("dotenv").config();
+// pull PORT from .env, give default value of 3000
+const { PORT } = process.env;
+// import express
+const express = require("express");
+// create application object
 const app = express();
-const methodOverride = require('method-override')
-require('dotenv').config();
-const mongoose = require('mongoose');
+const routes = require('./routes/index')
+const cors = require('cors')
 
+///////////////////////////////
+// MiddleWare
+////////////////////////////////
+app.use(cors()); // to prevent cors errors, open access to all origins
+app.use(express.urlencoded({extended: true}))
+app.use(express.json()); // parse json bodies
 
-// Database Connection
-const MONGODB_URI = process.env.MONGODB_URI
-mongoose.connect(MONGODB_URI, {
-    useNewUrlParser: false,
+///////////////////////////////
+// ROUTES
+////////////////////////////////
+app.use("/", routes);
+
+app.use((req,res) => {
+    res.status(404).json({message: "NOT A PROPER ROUTE"})
 })
-
-// Database Connection Error/Success
-// Define callback functions for various events
-const db = mongoose.connection
-db.on('error', (err) => console.log(err.message + ' is mongo not running?'));
-db.on('connected', () => console.log('mongo connected'));
-db.on('disconnected', () => console.log('mongo disconnected'));
-
-
-
-// Middleware
-app.use(express.static('public'))
-//Body parser: Add JSON data from request to the request object
-app.use(express.json())
-// Body parser middleware: give us access to req.body
-app.use(express.urlencoded({ extended: true }));
-// method override 
-// This will allow us to make DELETE and PUT requests
-app.use(methodOverride('_method'))
-//Landing Page
-// app.get('/', (req,res) => {
-//     res.render('landing.ejs')
-// })
-//Controller
-
-
-
-
-// Listener
-const PORT = process.env.PORT;
-app.listen(PORT, () => console.log(`server is listening on port: ${PORT}`));
+///////////////////////////////
+// LISTENER
+////////////////////////////////
+app.listen(PORT, () => console.log(`listening on PORT ${PORT}`));
